@@ -80,6 +80,31 @@ app.post("/posts", async (req, res) => {
   }
 });
 
+// Get Post by id
+app.get("/posts/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await client.posts.findFirst({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+          },
+        },
+      },
+    });
+    if (!post) return res.status(404).json({ message: "Post not found!" });
+    res.status(202).json(post);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Failed to fetch Post" });
+  }
+});
+
 // Port Listener
 const port = process.env.PORT || 4500;
 app.listen(port, () => {
