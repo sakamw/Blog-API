@@ -80,6 +80,28 @@ app.post("/posts", async (req, res) => {
   }
 });
 
+// Get all Posts
+app.get("/posts", async (_req, res) => {
+  try {
+    const posts = await client.posts.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+          },
+        },
+      },
+    });
+    res.status(201).json(posts);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Failed to fetch Posts" });
+  }
+});
+
 // Get Post by id
 app.get("/posts/:id", async (req, res) => {
   try {
