@@ -2,6 +2,8 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 
+dotenv.config();
+
 const client = new PrismaClient();
 const app = express();
 app.use(express.json());
@@ -29,6 +31,7 @@ app.get("/users", async (req, res) => {
   try {
     const users = await client.users.findMany({
       select: {
+        id: true,
         firstName: true,
         lastName: true,
         emailAddress: true,
@@ -39,6 +42,41 @@ app.get("/users", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: "Failed to Fetch Users" });
+  }
+});
+
+// Get a specific User and Blog Posts by User
+app.get("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await client.users.findFirst({
+      where: { id },
+      include: { posts: true },
+    });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json(user);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Failed to fetch user" });
+  }
+});
+
+// Create a Post
+app.post("/posts", async (req, res) => {
+  try {
+    const { id, title, content, userId } = req.body;
+    const newPost = await client.posts.create({
+      data: {
+        id,
+        title,
+        content,
+        userId,
+      },
+    });
+    res.status(201).json(newPost);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Failed to create post" });
   }
 });
 
