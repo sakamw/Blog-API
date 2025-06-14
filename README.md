@@ -22,7 +22,7 @@ This API allows you to create users and blog posts, retrieve user and post data 
 2. Install dependancies:
 
    ```bash
-   pnpm init
+   pnpm install
    ```
 
 3. Set up your .env fiel:
