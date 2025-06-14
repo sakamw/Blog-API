@@ -1,7 +1,8 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import pkg from "@prisma/client";
 import dotenv from "dotenv";
 
+const { PrismaClient } = pkg;
 dotenv.config();
 
 const client = new PrismaClient();
