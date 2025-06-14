@@ -27,7 +27,7 @@ app.post("/users", async (req, res) => {
 });
 
 // Get all Users
-app.get("/users", async (req, res) => {
+app.get("/users", async (_req, res) => {
   try {
     const users = await client.users.findMany({
       select: {
@@ -41,7 +41,7 @@ app.get("/users", async (req, res) => {
     res.status(200).json(users);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Failed to Fetch Users" });
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
@@ -57,7 +57,7 @@ app.get("/users/:id", async (req, res) => {
     res.status(200).json(user);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Failed to fetch user" });
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
@@ -76,7 +76,7 @@ app.post("/posts", async (req, res) => {
     res.status(201).json(newPost);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Failed to create post" });
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
@@ -84,6 +84,9 @@ app.post("/posts", async (req, res) => {
 app.get("/posts", async (_req, res) => {
   try {
     const posts = await client.posts.findMany({
+      where: {
+        isDeleted: false,
+      },
       include: {
         user: {
           select: {
@@ -98,7 +101,7 @@ app.get("/posts", async (_req, res) => {
     res.status(201).json(posts);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Failed to fetch Posts" });
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
@@ -107,7 +110,10 @@ app.get("/posts/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const post = await client.posts.findFirst({
-      where: { id },
+      where: {
+        id,
+        isDeleted: false,
+      },
       include: {
         user: {
           select: {
@@ -123,7 +129,42 @@ app.get("/posts/:id", async (req, res) => {
     res.status(202).json(post);
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Failed to fetch Post" });
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+// Update a Post by id
+app.put("/posts/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content } = req.body;
+    const updatePost = await client.posts.update({
+      where: { id },
+      data: { title, content },
+    });
+    res.status(200).json(updatePost);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+// Delete a post by id
+app.delete("/posts/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedPost = await client.posts.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+      },
+    });
+    res
+      .status(200)
+      .json({ message: "Post deleted successfully", data: deletedPost });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
